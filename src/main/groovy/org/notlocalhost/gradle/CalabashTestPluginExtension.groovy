@@ -6,4 +6,7 @@ package org.notlocalhost.gradle
 class CalabashTestPluginExtension {
     String featuresPath
     String profile
+    boolean verbose
+    String format
+    String[] tags
 }

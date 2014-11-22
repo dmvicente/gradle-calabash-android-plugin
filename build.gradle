@@ -9,11 +9,11 @@ buildscript {
 }
 
 apply plugin: 'groovy'
-apply plugin: 'maven'
-apply plugin: 'nexus'
+//apply plugin: 'maven'
+//apply plugin: 'nexus'
 
 group = 'org.notlocalhost.gradle'
-version = '1.3-SNAPSHOT'
+version = '1.4-DEV'
 
 dependencies {
   repositories {
@@ -22,12 +22,13 @@ dependencies {
 
   compile gradleApi()
   compile localGroovy()
-  compile 'com.android.tools.build:gradle:0.6.+'
+  compile 'com.android.tools.build:gradle:0.14.+'
 
   testCompile 'junit:junit:4.10'
   testCompile 'org.easytesting:fest-assert-core:2.0M10'
 }
 
+/*
 install {
   repositories.mavenInstaller {
     pom.artifactId = 'gradle-calabash-android-plugin'
@@ -74,3 +75,4 @@ modifyPom {
     }
   }
 }
+*/
