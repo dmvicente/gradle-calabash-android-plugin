@@ -116,12 +116,12 @@ class CalabashTestPlugin implements Plugin<Project> {
         commandArguments.add("--format")
         commandArguments.add(getOutputFormat())
 
+        commandArguments.add("--out")
+        commandArguments.add(outFile.canonicalPath)
+
         if (calabash.showProgress) {
             commandArguments.add("--format progress")
         }
-
-        commandArguments.add("--out")
-        commandArguments.add(outFile.canonicalPath)
 
         if (calabash.verbose) {
             commandArguments.add("-v")
