@@ -28,75 +28,56 @@ class CalabashTestPlugin implements Plugin<Project> {
                     "Having both 'android' and 'android-library' plugin is not supported.")
         }
 
-        def variants = hasAppPlugin ? project.android.applicationVariants :
-                project.android.libraryVariants
+        project.afterEvaluate {
 
-        //def apkFilePath = "$project.buildDir/outputs/apk"
+            def variants = hasAppPlugin ? project.android.applicationVariants :
+                    project.android.libraryVariants
 
-        variants.all { variant ->
-            /*
-            def buildTypeName = variant.buildType.name.capitalize()
-            def projectFlavorNames = [""]
-            if (hasAppPlugin) {
-                projectFlavorNames = variant.productFlavors.collect { it.name.capitalize() }
-                if (projectFlavorNames.isEmpty()) {
-                    projectFlavorNames = [""]
+            variants.all { variant ->
+
+                def apkFile = variant.outputs.outputFile.first().absolutePath
+
+                project.logger.debug "==========================="
+                project.logger.debug "$apkFile"
+                project.logger.debug "${project.getPath()}"
+                project.logger.debug "==========================="
+
+                def variationName = variant.name.capitalize()
+
+                //def outFile = new File(project.file("${project.buildDir}/reports/calabash/${variationName}"), "report.html")
+                def outFileDir = project.file("${project.buildDir}/reports/calabash/${variationName}")
+                def format = project.calabashTest.format ?: "html"
+                def outFile = new File(outFileDir, "report.${getOutputFormat()}")
+
+                def taskRunName = "$TEST_TASK_NAME$variationName"
+                def testRunTask = project.tasks.create(taskRunName, Exec)
+                testRunTask.dependsOn project["assemble${variationName}"]
+                testRunTask.description = "Run Calabash Tests for '$variationName'."
+                testRunTask.group = JavaBasePlugin.VERIFICATION_GROUP
+
+                testRunTask.workingDir "${project.rootDir}/"
+                def os = System.getProperty("os.name").toLowerCase()
+
+                Iterable commandArguments = constructCommandLineArguments(project, apkFile, outFile)
+
+                if (!os.contains("windows")) { // assume Linux
+                    testRunTask.environment("SCREENSHOT_PATH", "${outFileDir}/")
                 }
-            }
-            def projectFlavorName = projectFlavorNames.join('-')
-            def variationName = "${projectFlavorNames.join()}$buildTypeName"
 
-            def apkName = ""
-            if(projectFlavorName != "") {
-                apkName = "${project.name}-${projectFlavorName.toLowerCase()}-${buildTypeName.toLowerCase()}-unaligned.apk"
-            } else {
-                apkName = "${project.name}-${buildTypeName.toLowerCase()}-unaligned.apk"
-            }
-            */
-            def apkFile = variant.outputs.outputFile.first().absolutePath
+                testRunTask.commandLine commandArguments
 
-            project.logger.debug "==========================="
-            project.logger.debug "$apkFile"
-            project.logger.debug "${project.getPath()}"
-            project.logger.debug "==========================="
-
-            def variationName = variant.name.capitalize()
-
-            //def outFile = new File(project.file("${project.buildDir}/reports/calabash/${variationName}"), "report.html")
-            def outFileDir = project.file("${project.buildDir}/reports/calabash/${variationName}")
-            def format = project.calabashTest.format ?: "html"
-            def outFile = new File(outFileDir, "report.${getOutputFormat()}")
-
-            def taskRunName = "$TEST_TASK_NAME$variationName"
-            def testRunTask = project.tasks.create(taskRunName, Exec)
-            testRunTask.dependsOn project["assemble${variationName}"]
-            testRunTask.description = "Run Calabash Tests for '$variationName'."
-            testRunTask.group = JavaBasePlugin.VERIFICATION_GROUP
-
-            // def apkFile = variant.outputs.outputFile.absolutePath
-            //"$apkFilePath/$apkName"
-            testRunTask.workingDir "${project.rootDir}/"
-            def os = System.getProperty("os.name").toLowerCase()
-
-            Iterable commandArguments = constructCommandLineArguments(project, apkFile, outFile)
-
-            if (!os.contains("windows")) { // assume Linux
-                testRunTask.environment("SCREENSHOT_PATH", "${outFileDir}/")
-            }
-
-            testRunTask.commandLine commandArguments
-
-            testRunTask.doFirst {
-                if(!outFileDir.exists()) {
-                    project.logger.debug "Making dir path $outFileDir.canonicalPath"
-                    if(!outFileDir.mkdirs()) {
-                        throw new IllegalStateException("Could not create reporting directories")
+                testRunTask.doFirst {
+                    if(!outFileDir.exists()) {
+                        project.logger.debug "Making dir path $outFileDir.canonicalPath"
+                        if(!outFileDir.mkdirs()) {
+                            throw new IllegalStateException("Could not create reporting directories")
+                        }
                     }
                 }
-            }
-            
-            testRunTask.doLast {
-                println "\r\nCalabash Report: file://$outFile.canonicalPath"
+                
+                testRunTask.doLast {
+                    println "\r\nCalabash Report: file://$outFile.canonicalPath"
+                }
             }
         }
     }
@@ -140,15 +121,14 @@ class CalabashTestPlugin implements Plugin<Project> {
         }
 
         commandArguments.add("--out")
-        
         commandArguments.add(outFile.canonicalPath)
 
         if (calabash.verbose) {
             commandArguments.add("-v")
         }
-        if (calabash.tags?.length) {
-            commandArguments.add("--tags")
-            commandArguments.addAll(calabash.tags)
+
+        calabash.tags?.each() {
+            commandArguments.add("--tags ${it}")
         }
 
         return commandArguments;
