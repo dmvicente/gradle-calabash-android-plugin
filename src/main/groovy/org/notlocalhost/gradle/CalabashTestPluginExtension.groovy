@@ -9,4 +9,5 @@ class CalabashTestPluginExtension {
     boolean verbose
     String format
     String[] tags
+    boolean showProgress
 }

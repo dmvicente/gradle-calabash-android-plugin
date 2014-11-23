@@ -11,7 +11,10 @@ import org.gradle.api.tasks.Exec
 class CalabashTestPlugin implements Plugin<Project> {
     private static final String TEST_TASK_NAME = 'calabash'
 
+    private Project project
+
     void apply(Project project) {
+        this.project = project;
         project.extensions.create("calabashTest", CalabashTestPluginExtension)
 
         def hasAppPlugin = project.plugins.hasPlugin AppPlugin
@@ -28,9 +31,10 @@ class CalabashTestPlugin implements Plugin<Project> {
         def variants = hasAppPlugin ? project.android.applicationVariants :
                 project.android.libraryVariants
 
-        def apkFilePath = "$project.buildDir/outputs/apk"
+        //def apkFilePath = "$project.buildDir/outputs/apk"
 
         variants.all { variant ->
+            /*
             def buildTypeName = variant.buildType.name.capitalize()
             def projectFlavorNames = [""]
             if (hasAppPlugin) {
@@ -48,15 +52,20 @@ class CalabashTestPlugin implements Plugin<Project> {
             } else {
                 apkName = "${project.name}-${buildTypeName.toLowerCase()}-unaligned.apk"
             }
+            */
+            def apkFile = variant.outputs.outputFile.first().absolutePath
 
             project.logger.debug "==========================="
-            project.logger.debug "$apkFilePath/$apkName"
+            project.logger.debug "$apkFile"
             project.logger.debug "${project.getPath()}"
             project.logger.debug "==========================="
 
-            def outFile = new File(project.file("${project.buildDir}/reports/calabash/${variationName}"), "report.html")
-            def outFileDir = outFile.parentFile
+            def variationName = variant.name.capitalize()
 
+            //def outFile = new File(project.file("${project.buildDir}/reports/calabash/${variationName}"), "report.html")
+            def outFileDir = project.file("${project.buildDir}/reports/calabash/${variationName}")
+            def format = project.calabashTest.format ?: "html"
+            def outFile = new File(outFileDir, "report.${getOutputFormat()}")
 
             def taskRunName = "$TEST_TASK_NAME$variationName"
             def testRunTask = project.tasks.create(taskRunName, Exec)
@@ -64,7 +73,8 @@ class CalabashTestPlugin implements Plugin<Project> {
             testRunTask.description = "Run Calabash Tests for '$variationName'."
             testRunTask.group = JavaBasePlugin.VERIFICATION_GROUP
 
-            def apkFile = "$apkFilePath/$apkName"
+            // def apkFile = variant.outputs.outputFile.absolutePath
+            //"$apkFilePath/$apkName"
             testRunTask.workingDir "${project.rootDir}/"
             def os = System.getProperty("os.name").toLowerCase()
 
@@ -86,9 +96,13 @@ class CalabashTestPlugin implements Plugin<Project> {
             }
             
             testRunTask.doLast {
-                println "\r\nCalabash HTML Report: file://$outFile.canonicalPath"
+                println "\r\nCalabash Report: file://$outFile.canonicalPath"
             }
         }
+    }
+
+    String getOutputFormat() {
+        return project.calabashTest.format ?: "html"
     }
 
     Iterable constructCommandLineArguments(Project project, String apkFile, File outFile) {
@@ -106,31 +120,35 @@ class CalabashTestPlugin implements Plugin<Project> {
         commandArguments.add("run")
         commandArguments.add(apkFile)
 
-        String featuresPath = project.calabashTest.featuresPath
+        def calabash = project.calabashTest
+
+        String featuresPath = calabash.featuresPath
         if (featuresPath != null) {
             commandArguments.add(featuresPath)
         }
 
-        if(project.calabashTest.profile != null) {
+        if (calabash.profile != null) {
             commandArguments.add("--profile")
-            commandArguments.add(project.calabashTest.profile)
+            commandArguments.add(calabash.profile)
         }
 
         commandArguments.add("--format")
-        if (project.calabashTest.format != null) {
-            commandArguments.add(project.calabashTest.format)
-        } else {
-            commandArguments.add("html")
+        commandArguments.add(getOutputFormat())
+
+        if (calabash.showProgress) {
+            commandArguments.add("--format progress")
         }
 
         commandArguments.add("--out")
+        
         commandArguments.add(outFile.canonicalPath)
-        if (project.calabashTest.verbose) {
+
+        if (calabash.verbose) {
             commandArguments.add("-v")
         }
-        if (project.calabashTest.tags?.length) {
+        if (calabash.tags?.length) {
             commandArguments.add("--tags")
-            commandArguments.addAll(project.calabashTest.tags)
+            commandArguments.addAll(calabash.tags)
         }
 
         return commandArguments;
