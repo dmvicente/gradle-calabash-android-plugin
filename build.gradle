@@ -1,76 +1,60 @@
 buildscript {
   repositories {
-    mavenCentral()
+    jcenter()
   }
 
   dependencies {
-    classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.2'
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
   }
 }
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply plugin: 'nexus'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 group = 'org.notlocalhost.gradle'
-version = '1.3-SNAPSHOT'
+version = '1.4-FYBER'
 
 dependencies {
   repositories {
-    mavenCentral()
+    jcenter()
   }
 
   compile gradleApi()
   compile localGroovy()
-  compile 'com.android.tools.build:gradle:0.6.+'
+  compile 'com.android.tools.build:gradle:0.14.+'
 
   testCompile 'junit:junit:4.10'
   testCompile 'org.easytesting:fest-assert-core:2.0M10'
 }
 
-install {
-  repositories.mavenInstaller {
-    pom.artifactId = 'gradle-calabash-android-plugin'
-  }
-}
-uploadArchives {
-  repositories.mavenDeployer {
-    pom.artifactId = 'gradle-calabash-android-plugin'
-  }
-}
-
-modifyPom {
-  project {
-    name 'Gradle Calabash Test Plugin'
-    description "A Gradle plugin which enables Calabash Testing"
-    url 'https://github.com/pedlar/gradle-calabash-android-plugin'
-    inceptionYear '2013'
-
-    scm {
-      url 'https://github.com/pedlar/gradle-calabash-android-plugin'
-      connection 'scm:git:git://github.com/pedlar/gradle-calabash-android-plugin.git'
-      developerConnection 'scm:git:ssh://git@github.com/pedlar/gradle-calabash-android-plugin.git'
+publishing {
+  publications {
+    mavenGroovy(MavenPublication) {
+      from components.java
     }
+  }
+}
 
-    licenses {
-      license {
-        name 'The Apache Software License, Version 2.0'
-        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-        distribution 'repo'
+bintray {
+  user = bintrayUser
+  key = bintrayKey
+  publications = ['mavenGroovy'] // see publications closure
+  pkg {
+    repo = 'internal'
+    userOrg = 'fyber'
+    name = 'gradle-calabash-android-plugin'
+    desc = 'Pedlar Calabash gradle plugin with some additional improvements'
+    websiteUrl = 'https://github.com/Pedlar/gradle-calabash-android-plugin'
+    licenses = ['Apache-2.0']
+    labels = ['calabash', 'gradle', 'android']
+    version {
+      gpg {
+        sign = true
+        passphrase = bintrayPassphrase
       }
     }
-
-    developers {
-      developer {
-        id 'pedlar'
-        name 'Pedlar'
-        email 'pedlar88@gmail.com'
-      }
-    }
-
-    organization {
-      name 'NotLocalHost'
-      url 'http://notlocalhost.org'
-    }
   }
 }
+
