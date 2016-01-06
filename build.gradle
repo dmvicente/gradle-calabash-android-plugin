@@ -14,7 +14,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'org.notlocalhost.gradle'
-version = '1.4-FYBER'
+version = '1.5-FYBER'
 
 dependencies {
   repositories {
@@ -57,4 +57,3 @@ bintray {
     }
   }
 }
-
