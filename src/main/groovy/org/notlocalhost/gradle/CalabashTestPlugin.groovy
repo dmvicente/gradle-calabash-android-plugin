@@ -74,7 +74,7 @@ class CalabashTestPlugin implements Plugin<Project> {
                         }
                     }
                 }
-                
+
                 testRunTask.doLast {
                     println "\r\nCalabash Report: file://$outFile.canonicalPath"
                 }
@@ -108,6 +108,9 @@ class CalabashTestPlugin implements Plugin<Project> {
             commandArguments.add(featuresPath)
         }
 
+        String[] pathsRequired = calabash.pathsRequired
+
+
         if (calabash.profile != null) {
             commandArguments.add("--profile")
             commandArguments.add(calabash.profile)
@@ -129,6 +132,10 @@ class CalabashTestPlugin implements Plugin<Project> {
 
         calabash.tags?.each() {
             commandArguments.add("--tags ${it}")
+        }
+
+        calabash.pathsRequired?.each() {
+            commandArguments.add("-r ${it}")
         }
 
         return commandArguments;
