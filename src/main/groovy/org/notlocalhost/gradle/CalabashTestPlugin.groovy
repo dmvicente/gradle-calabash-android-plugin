@@ -103,13 +103,9 @@ class CalabashTestPlugin implements Plugin<Project> {
 
         def calabash = project.calabashTest
 
-        String featuresPath = calabash.featuresPath
-        if (featuresPath != null) {
-            commandArguments.add(featuresPath)
+        calabash.featuresPaths?.each() {
+            commandArguments.add("${it}")
         }
-
-        String[] pathsRequired = calabash.pathsRequired
-
 
         if (calabash.profile != null) {
             commandArguments.add("--profile")
