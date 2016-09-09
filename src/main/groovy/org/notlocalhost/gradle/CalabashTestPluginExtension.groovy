@@ -8,7 +8,7 @@ class CalabashTestPluginExtension {
     String[] pathsRequired
     String profile
     boolean verbose
-    String format
     String[] tags
     boolean showProgress
+    String[] formats
 }

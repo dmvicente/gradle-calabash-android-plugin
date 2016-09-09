@@ -23,7 +23,7 @@ class CalabashTestPluginTest {
     try {
       project.apply plugin: 'calabash-test'
     } catch (IllegalStateException e) {
-      Assertions.assertThat(e).hasMessage("The 'android' or 'android-library' plugin is required.");
+      Assertions.assertThat(e).hasMessage("The 'com.android.application' or 'com.android.library' plugin is required.");
     }
   }
 
@@ -57,5 +57,23 @@ class CalabashTestPluginTest {
       Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
 
       Assertions.assertThat(commandArguments.contains("expectedProfile")).isTrue();
+  }
+
+  @Test public void pluginGetsFormatsFromGradleBuildFileWhenAvailable() {
+      CalabashTestPlugin plugin = new CalabashTestPlugin();
+
+      String apkFile = "TestApkFile";
+      File outFile = new File("/File/Path");
+      Project project = ProjectBuilder.builder().build();
+
+      project.extensions.create("calabashTest", CalabashTestPluginExtension)
+
+      project.calabashTest.formats = ["html", "json"]
+
+      Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
+
+      Assertions.assertThat(commandArguments.contains("--format")).isTrue();
+      Assertions.assertThat(commandArguments.contains("html")).isTrue();
+      Assertions.assertThat(commandArguments.contains("json")).isTrue();
   }
 }

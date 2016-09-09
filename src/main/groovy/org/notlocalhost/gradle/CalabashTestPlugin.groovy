@@ -22,10 +22,10 @@ class CalabashTestPlugin implements Plugin<Project> {
 
         // Ensure the Android plugin has been added in app or library form, but not both.
         if (!hasAppPlugin && !hasLibraryPlugin) {
-            throw new IllegalStateException("The 'android' or 'android-library' plugin is required.")
+            throw new IllegalStateException("The 'com.android.application' or 'com.android.library' plugin is required.")
         } else if (hasAppPlugin && hasLibraryPlugin) {
             throw new IllegalStateException(
-                    "Having both 'android' and 'android-library' plugin is not supported.")
+                    "Having both 'com.android.application' and 'com.android.library' plugin is not supported.")
         }
 
         project.afterEvaluate {
@@ -44,7 +44,6 @@ class CalabashTestPlugin implements Plugin<Project> {
 
                 def variationName = variant.name.capitalize()
 
-                //def outFile = new File(project.file("${project.buildDir}/reports/calabash/${variationName}"), "report.html")
                 def outFileDir = project.file("${project.buildDir}/reports/calabash/${variationName}")
                 def format = project.calabashTest.format ?: "html"
                 def outFile = new File(outFileDir, "report.${getOutputFormat()}")
@@ -58,7 +57,8 @@ class CalabashTestPlugin implements Plugin<Project> {
                 testRunTask.workingDir "${project.rootDir}/"
                 def os = System.getProperty("os.name").toLowerCase()
 
-                Iterable commandArguments = constructCommandLineArguments(project, apkFile, outFile)
+
+                Iterable commandArguments = constructCommandLineArguments(project, apkFile, outFileDir)
 
                 if (!os.contains("windows")) { // assume Linux
                     testRunTask.environment("SCREENSHOT_PATH", "${outFileDir}/")
@@ -67,9 +67,9 @@ class CalabashTestPlugin implements Plugin<Project> {
                 testRunTask.commandLine commandArguments
 
                 testRunTask.doFirst {
-                    if(!outFileDir.exists()) {
+                    if (!outFileDir.exists()) {
                         project.logger.debug "Making dir path $outFileDir.canonicalPath"
-                        if(!outFileDir.mkdirs()) {
+                        if (!outFileDir.mkdirs()) {
                             throw new IllegalStateException("Could not create reporting directories")
                         }
                     }
@@ -82,11 +82,7 @@ class CalabashTestPlugin implements Plugin<Project> {
         }
     }
 
-    String getOutputFormat() {
-        return project.calabashTest.format ?: "html"
-    }
-
-    Iterable constructCommandLineArguments(Project project, String apkFile, File outFile) {
+    Iterable constructCommandLineArguments(Project project, String apkFile, File outFileDir) {
         def os = System.getProperty("os.name").toLowerCase()
 
         java.util.ArrayList<String> commandArguments = new ArrayList<String>()
@@ -112,11 +108,18 @@ class CalabashTestPlugin implements Plugin<Project> {
             commandArguments.add(calabash.profile)
         }
 
-        commandArguments.add("--format")
-        commandArguments.add(getOutputFormat())
+        String[] outFileFormats = project.calabashTest.formats
+        if (outFileFormats == null) {
+            outFileFormats = ["html"]
+        }
 
-        commandArguments.add("--out")
-        commandArguments.add(outFile.canonicalPath)
+        for (String outFileFormat : outFileFormats) {
+            def outFile = new File(outFileDir, "report." + outFileFormat)
+            commandArguments.add("--format")
+            commandArguments.add(outFileFormat)
+            commandArguments.add("--out")
+            commandArguments.add(outFile.canonicalPath)
+        }
 
         if (calabash.showProgress) {
             commandArguments.add("--format progress")
