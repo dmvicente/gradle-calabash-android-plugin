@@ -22,8 +22,8 @@ class CalabashTestPluginTest {
     Project project = ProjectBuilder.builder().build();
     try {
       project.apply plugin: 'calabash-test'
-    } catch (IllegalStateException e) {
-      Assertions.assertThat(e).hasMessage("The 'com.android.application' or 'com.android.library' plugin is required.");
+    } catch (Exception e) {
+      Assertions.assertThat(e.cause).hasMessage("The 'com.android.application' or 'com.android.library' plugin is required.");
     }
   }
 
@@ -36,7 +36,7 @@ class CalabashTestPluginTest {
 
       project.extensions.create("calabashTest", CalabashTestPluginExtension)
 
-      project.calabashTest.featuresPath = "features-path";
+      project.calabashTest.featuresPaths = ["features-path"];
 
       Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
 
