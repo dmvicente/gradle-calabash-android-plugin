@@ -85,7 +85,7 @@ class CalabashTestPlugin implements Plugin<Project> {
     Iterable constructCommandLineArguments(Project project, String apkFile, File outFileDir) {
         def os = System.getProperty("os.name").toLowerCase()
 
-        java.util.ArrayList<String> commandArguments = new ArrayList<String>()
+        ArrayList<String> commandArguments = new ArrayList<>()
 
         if (os.contains("windows")) {
             // you start commands in Windows by kicking off a cmd shell
@@ -93,11 +93,14 @@ class CalabashTestPlugin implements Plugin<Project> {
             commandArguments.add("/c")
         }
 
+        def calabash = project.calabashTest
+
+        calabash.environmentVariables?.each { k, v -> commandArguments.add("${k}=${v}") }
+
         commandArguments.add("calabash-android")
         commandArguments.add("run")
         commandArguments.add(apkFile)
 
-        def calabash = project.calabashTest
 
         calabash.featuresPaths?.each() {
             commandArguments.add(it)

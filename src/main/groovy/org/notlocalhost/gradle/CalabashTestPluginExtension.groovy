@@ -11,4 +11,5 @@ class CalabashTestPluginExtension {
     String[] tags
     boolean showProgress
     String[] formats
+    Map<String, String> environmentVariables
 }
