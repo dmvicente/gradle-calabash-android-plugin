@@ -97,6 +97,10 @@ class CalabashTestPlugin implements Plugin<Project> {
 
         calabash.environmentVariables?.each { k, v -> commandArguments.add("${k}=${v}") }
 
+        if (calabash.preRun?.trim()) {
+            commandArguments.add(calabash.preRun)
+        }
+
         commandArguments.add("calabash-android")
         commandArguments.add("run")
         commandArguments.add(apkFile)
