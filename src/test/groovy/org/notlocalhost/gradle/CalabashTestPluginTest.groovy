@@ -6,74 +6,98 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Test
 
 class CalabashTestPluginTest {
-  @Test public void pluginDetectsAppPlugin() {
-    Project project = ProjectBuilder.builder().build();
-    project.apply plugin: 'android'
-    project.apply plugin: 'calabash-test'
-  }
-
-  @Test public void pluginDetectsLibraryPlugin() {
-    Project project = ProjectBuilder.builder().build();
-    project.apply plugin: 'android-library'
-    project.apply plugin: 'calabash-test'
-  }
-
-  @Test public void pluginFailsWithoutAndroidPlugin() {
-    Project project = ProjectBuilder.builder().build();
-    try {
-      project.apply plugin: 'calabash-test'
-    } catch (Exception e) {
-      Assertions.assertThat(e.cause).hasMessage("The 'com.android.application' or 'com.android.library' plugin is required.");
+    @Test
+    public void pluginDetectsAppPlugin() {
+        Project project = ProjectBuilder.builder().build();
+        project.apply plugin: 'android'
+        project.apply plugin: 'calabash-test'
     }
-  }
 
-  @Test public void pluginGetsFeaturesPathFromGradleBuildFileWhenAvailable() {
-      CalabashTestPlugin plugin = new CalabashTestPlugin();
+    @Test
+    public void pluginDetectsLibraryPlugin() {
+        Project project = ProjectBuilder.builder().build();
+        project.apply plugin: 'android-library'
+        project.apply plugin: 'calabash-test'
+    }
 
-      String apkFile = "TestApkFile";
-      File outFile = new File("/File/Path");
-      Project project = ProjectBuilder.builder().build();
+    @Test
+    public void pluginFailsWithoutAndroidPlugin() {
+        Project project = ProjectBuilder.builder().build();
+        try {
+            project.apply plugin: 'calabash-test'
+        } catch (Exception e) {
+            Assertions.assertThat(e.cause).hasMessage("The 'com.android.application' or 'com.android.library' plugin is required.");
+        }
+    }
 
-      project.extensions.create("calabashTest", CalabashTestPluginExtension)
+    @Test
+    public void pluginGetsFeaturesPathFromGradleBuildFileWhenAvailable() {
+        CalabashTestPlugin plugin = new CalabashTestPlugin();
 
-      project.calabashTest.featuresPaths = ["features-path"];
+        String apkFile = "TestApkFile";
+        File outFile = new File("/File/Path");
+        Project project = ProjectBuilder.builder().build();
 
-      Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
+        project.extensions.create("calabashTest", CalabashTestPluginExtension)
 
-      Assertions.assertThat(commandArguments.contains("features-path")).isTrue();
-  }
+        project.calabashTest.featuresPaths = ["features-path"];
 
-  @Test public void pluginGetsProfileFromGradleBuildFileWhenAvailable() {
-      CalabashTestPlugin plugin = new CalabashTestPlugin();
+        Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
 
-      String apkFile = "TestApkFile";
-      File outFile = new File("/File/Path");
-      Project project = ProjectBuilder.builder().build();
+        Assertions.assertThat(commandArguments.contains("features-path")).isTrue();
+    }
 
-      project.extensions.create("calabashTest", CalabashTestPluginExtension)
+    @Test
+    public void pluginGetsProfileFromGradleBuildFileWhenAvailable() {
+        CalabashTestPlugin plugin = new CalabashTestPlugin();
 
-      project.calabashTest.profile = "expectedProfile";
+        String apkFile = "TestApkFile";
+        File outFile = new File("/File/Path");
+        Project project = ProjectBuilder.builder().build();
 
-      Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
+        project.extensions.create("calabashTest", CalabashTestPluginExtension)
 
-      Assertions.assertThat(commandArguments.contains("expectedProfile")).isTrue();
-  }
+        project.calabashTest.profile = "expectedProfile";
 
-  @Test public void pluginGetsFormatsFromGradleBuildFileWhenAvailable() {
-      CalabashTestPlugin plugin = new CalabashTestPlugin();
+        Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
 
-      String apkFile = "TestApkFile";
-      File outFile = new File("/File/Path");
-      Project project = ProjectBuilder.builder().build();
+        Assertions.assertThat(commandArguments.contains("expectedProfile")).isTrue();
+    }
 
-      project.extensions.create("calabashTest", CalabashTestPluginExtension)
+    @Test
+    public void pluginGetsFormatsFromGradleBuildFileWhenAvailable() {
+        CalabashTestPlugin plugin = new CalabashTestPlugin();
 
-      project.calabashTest.formats = ["html", "json"]
+        String apkFile = "TestApkFile";
+        File outFile = new File("/File/Path");
+        Project project = ProjectBuilder.builder().build();
 
-      Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
+        project.extensions.create("calabashTest", CalabashTestPluginExtension)
 
-      Assertions.assertThat(commandArguments.contains("--format")).isTrue();
-      Assertions.assertThat(commandArguments.contains("html")).isTrue();
-      Assertions.assertThat(commandArguments.contains("json")).isTrue();
-  }
+        project.calabashTest.formats = ["html", "json"]
+
+        Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
+
+        Assertions.assertThat(commandArguments.contains("--format")).isTrue();
+        Assertions.assertThat(commandArguments.contains("html")).isTrue();
+        Assertions.assertThat(commandArguments.contains("json")).isTrue();
+    }
+
+    @Test
+    public void pluginAddsTrueAtTheEndSoItDoesNotMarkTheBuildAsFailed() {
+        CalabashTestPlugin plugin = new CalabashTestPlugin();
+
+        String apkFile = "TestApkFile";
+        File outFile = new File("/File/Path");
+        Project project = ProjectBuilder.builder().build();
+
+        project.extensions.create("calabashTest", CalabashTestPluginExtension)
+
+        project.calabashTest.markBuildAsFailed = false
+
+        Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
+
+        Assertions.assertThat(commandArguments.contains("||")).isTrue();
+        Assertions.assertThat(commandArguments.contains("true")).isTrue();
+    }
 }

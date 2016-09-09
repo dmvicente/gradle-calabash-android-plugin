@@ -144,6 +144,11 @@ class CalabashTestPlugin implements Plugin<Project> {
             commandArguments.add("-r ${it}")
         }
 
+        if (!calabash.markBuildAsFailed) {
+            commandArguments.add("||");
+            commandArguments.add("true");
+        }
+
         return commandArguments;
     }
 }
