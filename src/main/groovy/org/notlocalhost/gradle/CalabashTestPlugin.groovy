@@ -45,8 +45,6 @@ class CalabashTestPlugin implements Plugin<Project> {
                 def variationName = variant.name.capitalize()
 
                 def outFileDir = project.file("${project.buildDir}/reports/calabash/${variationName}")
-                def format = project.calabashTest.format ?: "html"
-                def outFile = new File(outFileDir, "report.${getOutputFormat()}")
 
                 def taskRunName = "$TEST_TASK_NAME$variationName"
                 def testRunTask = project.tasks.create(taskRunName, Exec)
