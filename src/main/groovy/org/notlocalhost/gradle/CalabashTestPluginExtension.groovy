@@ -13,5 +13,5 @@ class CalabashTestPluginExtension {
     String[] formats
     Map<String, String> environmentVariables
     String preRun
-    boolean markBuildAsFailed = true
+    boolean ignoreExitValue
 }

@@ -14,7 +14,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'org.notlocalhost.gradle'
-version = '1.6-FYBER'
+version = '1.7-FYBER'
 
 dependencies {
   repositories {
@@ -46,7 +46,7 @@ bintray {
     userOrg = 'fyber'
     name = 'gradle-calabash-android-plugin'
     desc = 'Pedlar Calabash gradle plugin with some additional improvements'
-    websiteUrl = 'https://github.com/Pedlar/gradle-calabash-android-plugin'
+    websiteUrl = 'https://github.com/dmvicente/gradle-calabash-android-plugin'
     licenses = ['Apache-2.0']
     labels = ['calabash', 'gradle', 'android']
     version {

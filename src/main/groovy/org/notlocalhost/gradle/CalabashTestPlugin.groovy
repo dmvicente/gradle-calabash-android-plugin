@@ -62,7 +62,13 @@ class CalabashTestPlugin implements Plugin<Project> {
                     testRunTask.environment("SCREENSHOT_PATH", "${outFileDir}/")
                 }
 
+                def calabash = project.calabashTest
+
+                calabash.environmentVariables?.each { k, v -> testRunTask.environment(k, v) }
+                testRunTask.environment("PATH", System.getenv().get("PATH"))
+
                 testRunTask.commandLine commandArguments
+                testRunTask.ignoreExitValue calabash.ignoreExitValue
 
                 testRunTask.doFirst {
                     if (!outFileDir.exists()) {
@@ -92,8 +98,6 @@ class CalabashTestPlugin implements Plugin<Project> {
         }
 
         def calabash = project.calabashTest
-
-        calabash.environmentVariables?.each { k, v -> commandArguments.add("${k}=${v}") }
 
         if (calabash.preRun?.trim()) {
             commandArguments.add(calabash.preRun)
@@ -140,11 +144,6 @@ class CalabashTestPlugin implements Plugin<Project> {
 
         calabash.pathsRequired?.each() {
             commandArguments.add("-r ${it}")
-        }
-
-        if (!calabash.markBuildAsFailed) {
-            commandArguments.add("||");
-            commandArguments.add("true");
         }
 
         return commandArguments;

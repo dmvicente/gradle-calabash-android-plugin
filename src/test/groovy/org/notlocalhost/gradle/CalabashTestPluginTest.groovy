@@ -83,21 +83,4 @@ class CalabashTestPluginTest {
         Assertions.assertThat(commandArguments.contains("json")).isTrue();
     }
 
-    @Test
-    public void pluginAddsTrueAtTheEndSoItDoesNotMarkTheBuildAsFailed() {
-        CalabashTestPlugin plugin = new CalabashTestPlugin();
-
-        String apkFile = "TestApkFile";
-        File outFile = new File("/File/Path");
-        Project project = ProjectBuilder.builder().build();
-
-        project.extensions.create("calabashTest", CalabashTestPluginExtension)
-
-        project.calabashTest.markBuildAsFailed = false
-
-        Iterable commandArguments = plugin.constructCommandLineArguments(project, apkFile, outFile);
-
-        Assertions.assertThat(commandArguments.contains("||")).isTrue();
-        Assertions.assertThat(commandArguments.contains("true")).isTrue();
-    }
 }
